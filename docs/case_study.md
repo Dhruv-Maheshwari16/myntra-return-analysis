@@ -69,7 +69,13 @@ Data pulled directly from [`analysis/category_share.csv`](../analysis/category_s
 | **Other / Not Return-Related** | 289 | 74.29% | 0.0% | 4.79★ | 1★ | 5★ |
 | **Total** | **389** | **100.00%** | **100.0%** | — | — | — |
 
-*(Note: An image file of the dashboard screenshot is not present in the repository files; the interactive analytics dashboard can be accessed directly at [`analysis/dashboard.html`](../analysis/dashboard.html)).*
+### Executive Analytics Dashboard
+
+The interactive dashboard synthesizes the SQL diagnostics into high-level KPI cards, complaint volume distributions, category sentiment ratings, and an operational ROI savings calculator:
+
+![Myntra Returns Analysis Dashboard](../assets/dashboard.png)
+
+*(The live interactive version with dynamic category inspection, dual-denominator toggles, and return reduction simulation is accessible at [`analysis/dashboard.html`](../analysis/dashboard.html)).*
 
 ---
 
