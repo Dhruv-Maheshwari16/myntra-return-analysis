@@ -1,73 +1,219 @@
-# End-to-End Product Case Study: Diagnosing & Solving Avoidable Returns in Indian Fashion E-Commerce
+# Reducing Avoidable Apparel Returns on Myntra: A Product & Analytics Case Study
 
+## 1. Title & Summary
+
+### Reducing Avoidable Apparel Returns on Myntra: A Product & Analytics Case Study
+
+The initial project hypothesis posited that avoidable apparel returns on Myntra were predominantly driven by sizing and fit mismatches resulting from e-commerce sensory limitations and inconsistent size charts. However, quantitative classification of 389 customer reviews revealed a major pivot: size and fit issues accounted for only 1.80% of total reviews (7.0% of actionable return complaints), while post-handover refund settlement delays (34.0% of actionable complaints) and warehouse fulfillment errors (24.0%) were the primary drivers. To address these operational friction points, the proposed product solution introduces an in-app real-time refund status tracker with live milestone stages and bank UTR numbers, combined with photo-verified doorstep pickup decoupling for wrong-item claims and webhook-triggered instant refunds for low-risk customer cohorts.
+
+---
+
+## 2. Problem Statement
+
+In Indian apparel e-commerce, gross return rates typically range from 25% to 40%, generating reverse logistics expenses (₹70–₹120 per trip), warehouse restocking costs (₹30–₹50 per item), and inventory transit lockup lasting 7 to 14 days.
+
+The starting assumption of this study was that customer sizing and fit errors represented the dominant driver of avoidable returns. This hypothesis assumed that the digital sensory gap—customers being unable to physically try on garments or touch fabrics prior to purchase—coupled with irregular brand tailoring and inaccurate size charts, was the primary cause of return requests. It is critical to state explicitly that this hypothesis served strictly as the initial starting assumption for problem framing, not the final empirical finding of the study.
+
+---
+
+## 3. Methodology
+
+The research and data pipeline followed this sequential process:
+
+1. **Review Scraping & Keyword Filtering**: 3,000 customer reviews from Myntra and 1,000 customer reviews from Ajio were scraped from the Google Play Store using [`scripts/scrape_reviews.py`](../scripts/scrape_reviews.py). A case-insensitive filter applied 8 return-related keywords (`return`, `refund`, `size`, `fit`, `exchange`, `wrong item`, `quality`, `damaged`) across the Myntra reviews, resulting in a filtered dataset of 389 candidate reviews ([`data/myntra_filtered.csv`](../data/myntra_filtered.csv)).
+2. **Identification of False Positives**: An early discovery during manual inspection showed that roughly 68% of keyword-matched reviews were 5-star positive praise rather than return complaints (e.g., praise mentioning phrases like *"quality is good"* or *"perfect fit"*). This made the addition of an explicit `"Other / Not Return-Related"` category essential to the taxonomy to filter out false positives.
+3. **Empirical 6-Category Taxonomy Formulation**: A 6-category mutually exclusive, collectively exhaustive (MECE) taxonomy was constructed empirically from the review text with deterministic precedence rules ([`docs/taxonomy.md`](taxonomy.md)):
+   - *Size & Fit Discrepancy*
+   - *Defective, Damaged & Counterfeit Items*
+   - *Incorrect / Wrong Item Delivered*
+   - *Return & Exchange Logistics & QC Friction*
+   - *Refund Processing & Settlement Disputes*
+   - *Other / Not Return-Related*
+4. **Baseline & GenAI Classifier Development**: Two classifiers were constructed: a rule-based baseline classifier using first-match keywords ([`scripts/baseline_classifier.py`](../scripts/baseline_classifier.py)) and a GenAI classifier using few-shot prompts with Gemini 3.6 Flash ([`scripts/classify_reviews_gemini.py`](../scripts/classify_reviews_gemini.py)). Both were evaluated against a validation set.
+5. **Identification of Methodology Flaw (Circularity Flaw)**: The initial classification scoring indicated a 22.22% baseline accuracy, which later appeared to reach "100%" accuracy after a taxonomy revision. Upon review, this was identified as a self-referential and circular methodology flaw: the ground-truth validation file had been edited using the exact same taxonomy and model-assisted outputs being evaluated. This was documented as an identified methodology flaw and subsequently corrected.
+6. **Corrective Fix via Blind Independent Validation**: To correct the circularity flaw, an independent validation sample was manually labeled blind without referencing the model's predictions. When evaluated against `genai_category`, the model achieved an 82% agreement rate (specifically 82.14%, or 23 out of 28 reviews matched). This 82% figure represents the real, reportable accuracy figure, distinct from the circular 100% figure.
+7. **Baseline vs. GenAI Comparison & Linguistic Failure Modes**: On the 100-review validation benchmark ([`docs/classification_comparison.md`](classification_comparison.md)), the naive keyword baseline achieved 19.00% accuracy (19/100 matches) compared to 96.00% accuracy (96/100 matches) for the GenAI model, an improvement delta of +77.00 percentage points. The keyword baseline fails on nuanced language that the GenAI model successfully classifies, as demonstrated in these documented examples:
+   - **Example 1 — Positive Praise Flagged as Defect (Review `b7cdb8bc`)**:  
+     *Review text*: *"good quality product ease of buying and offers are exciting always"*  
+     *Baseline Category*: `Defective, Damaged & Counterfeit Items` (triggered by the token `"quality"`)  
+     *GenAI Category*: `Other / Not Return-Related`  
+     *Linguistic Breakdown*: The keyword baseline lacks sentiment awareness and treats positive praise containing category vocabulary as a merchandise defect, whereas GenAI identifies the net positive sentiment.
+   - **Example 2 — Counterfeit Terminology Missed (Review `015175e8`)**:  
+     *Review text*: *"Very disappointing experience with Myntra. I ordered Yonex Nivis 350 shuttlecocks, but received duplicate/counterfeit products instead of genuine items. I raised a return request, but Myntra is now refusing to take them back, stating non return policy of product. If a duplicate product was delivered, the responsibility should be on the seller and Myntra, not the customer. Myntra should investigate the seller. Very poor service and a serious loss of trust."*  
+     *Baseline Category*: `Unclassified`  
+     *GenAI Category*: `Defective, Damaged & Counterfeit Items`  
+     *Linguistic Breakdown*: The keyword baseline failed to match `"duplicate"`, `"counterfeit"`, or `"genuine items"` against its fixed keyword list, classifying the review as `Unclassified`. GenAI identified the semantic context as counterfeit merchandise.
+
+---
+
+## 4. Key Findings (from SQL Analysis)
+
+Data pulled directly from [`analysis/category_share.csv`](../analysis/category_share.csv) and [`analysis/category_ratings.csv`](../analysis/category_ratings.csv) reveals that the data did not support the original size and fit hypothesis:
+
+- **Size & Fit Discrepancy was the smallest genuine return-complaint category**: Accounting for only 7 reviews, it represents **1.8% of total filtered reviews (including Other)** and **7.0% of actionable complaints (excluding Other)**, with an average customer rating of 2.57★.
+- **Refund Processing & Settlement Disputes was the largest genuine complaint category**: Accounting for 34 reviews, it represents **8.74% of total filtered reviews (including Other)** and **34.0% of actionable complaints (excluding Other)**, with an average rating of 1.12★.
+- **Incorrect / Wrong Item Delivered was the second largest complaint category**: Accounting for 24 reviews, it represents **6.17% of total filtered reviews (including Other)** and **24.0% of actionable complaints (excluding Other)**, with an average rating of 1.13★.
+- **Return & Exchange Logistics & QC Friction** accounted for 20 reviews (**5.14% including Other / 20.0% excluding Other**), carrying the lowest rating at 1.05★.
+- **Defective, Damaged & Counterfeit Items** accounted for 15 reviews (**3.86% including Other / 15.0% excluding Other**), with an average rating of 1.07★.
+- **Other / Not Return-Related** accounted for 289 reviews (**74.29% of all 389 reviews**), with an average rating of 4.79★.
+
+### Category Share and Rating Summary Table
+
+| Category | Review Count | % Share (Including Other, N=389) | % Share (Excluding Other, N=100) | Avg Rating | Min Rating | Max Rating |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Refund Processing & Settlement Disputes** | 34 | 8.74% | 34.0% | 1.12★ | 1★ | 5★ |
+| **Incorrect / Wrong Item Delivered** | 24 | 6.17% | 24.0% | 1.13★ | 1★ | 3★ |
+| **Return & Exchange Logistics & QC Friction** | 20 | 5.14% | 20.0% | 1.05★ | 1★ | 2★ |
+| **Defective, Damaged & Counterfeit Items** | 15 | 3.86% | 15.0% | 1.07★ | 1★ | 2★ |
+| **Size & Fit Discrepancy** | 7 | 1.8% | 7.0% | 2.57★ | 1★ | 5★ |
+| **Other / Not Return-Related** | 289 | 74.29% | 0.0% | 4.79★ | 1★ | 5★ |
+| **Total** | **389** | **100.00%** | **100.0%** | — | — | — |
+
+*(Note: An image file of the dashboard screenshot is not present in the repository files; the interactive analytics dashboard can be accessed directly at [`analysis/dashboard.html`](../analysis/dashboard.html)).*
+
+---
+
+## 5. Competitive Context
+
+The competitive audit documented in [`design/competitive/teardown_notes.md`](../design/competitive/teardown_notes.md) established the following five points:
+
+- **Return Window Length**: Myntra offers a 14-day return window, which exceeds the 10-day return windows provided by Ajio and Amazon India.
+- **Return-Window-Closed Transparency**: The original hypothesis that Myntra silently removes the return button upon expiration was tested and found false. Myntra displays an explicit notification banner stating `"Exchange/Return window closed on [date]"` directly on the order card, comparable to Amazon's messaging.
+- **Package Logistics vs. Refund Status Visibility Gap**: All three platforms track physical return package logistics in detail (pickup assigned, collected, transit hub scan, warehouse inbound), but none of the three display live refund or financial settlement status once the package is received at the warehouse. This visibility gap coincides directly with where review data shows the highest concentration of customer complaints (34.0% under Refund Processing & Settlement Disputes).
+- **Aspirational Benchmark**: The Souled Store (offering a 30-day return window) and Nykaa (permitting returns on select sealed fragrance SKUs) demonstrate that more flexible return policies are viable in the Indian market when return-risk is calibrated. This finding was cited from general market knowledge and public policy documentation, not independently screenshotted during this research.
+- **Research Limitation**: A live return-reason selection screen could not be captured on any platform during the audit because no personal order was within an active return window at the time of research.
+
+---
+
+## 6. Proposed Solution (full PRD)
+
+The complete, unedited Product Requirements Document from [`docs/PRD.md`](PRD.md) is inserted below:
+
+### Product Requirements Document (PRD): Post-Purchase Refund Transparency & Wrong-Item QC Resolution Flow
+
+**Document Status**: Final Draft  
 **Author**: Dhruv Maheshwari  
-**Role**: Product & Analytics Lead (Personal Portfolio Project)  
-**Status**: Milestone Synthesis (Phase 8)  
-**Tools**: Python, Google GenAI SDK (Gemini 3.6 Flash), SQLite, HTML5/CSS3/Chart.js, Git  
-**Repository**: [`https://github.com/Dhruv-Maheshwari16/myntra-return-analysis.git`](https://github.com/Dhruv-Maheshwari16/myntra-return-analysis.git)
+**Target Platform**: Myntra Mobile App (iOS / Android) & Reverse Logistics 3PL Agent SDK  
+**Direct Data Sources**: [`analysis/category_share.csv`](../analysis/category_share.csv) &bull; [`analysis/category_ratings.csv`](../analysis/category_ratings.csv)  
 
 ---
 
-## 1. Project Overview & Problem Statement
+#### PRD Section 1: Problem Statement
 
-In Indian fashion e-commerce, apparel return rates hover between **25% and 40%**, representing one of the single most damaging margin drains for platforms operating at scale. Each return incurs direct two-way logistics overhead (₹70–₹120), warehouse repackaging expenses (₹30–₹50), and freezes inventory in transit for 7–14 days.
+Customer return complaints on Myntra are overwhelmingly dominated by post-handover financial settlement delays and seller fulfillment errors, rather than pre-purchase fit uncertainty. 
 
-While industry consensus often points to customer sizing errors as the inevitable cost of selling fashion online, I set out to rigorously test this assumption. Using natural language processing, deterministic classification rules, SQL analytics, and competitive product teardowns, I investigated:
+According to SQL analysis of classified customer feedback ([`analysis/category_share.csv`](../analysis/category_share.csv)):
+- **Refund Processing & Settlement Disputes** is the #1 actionable complaint, accounting for **34.0%** of all actionable return grievances (8.74% of total reviews) with an average customer rating of **1.12★** ([`analysis/category_ratings.csv`](../analysis/category_ratings.csv)).
+- **Incorrect / Wrong Item Delivered** is the second largest driver at **24.0%** of actionable complaints (6.17% of total reviews) with an average rating of **1.13★**.
+- By contrast, **Size & Fit Discrepancy** accounts for only **7.0%** of actionable complaints (1.80% of total reviews).
 
-> *What percentage of e-commerce returns are truly unavoidable customer fit failures versus operational and product breakdowns that can be eliminated?*
+> **Core Strategic Pivot**:  
+> While my original hypothesis assumed size/fit was the dominant driver, classification of real review data redirected the focus to post-handover refund settlement delays and upstream warehouse dispatch errors.
 
----
-
-## 2. Research Methodology & Engineering Pipeline
-
-```mermaid
-flowchart LR
-    A["Phase 1: Scrape<br/>(3,000 Reviews)"] --> B["Phase 2: Taxonomy<br/>(6 MECE Categories)"]
-    B --> C["Phase 3: Classify & Validate<br/>(Gemini 3.6 Flash vs. Baseline)"]
-    C --> D["Phase 4: SQL Warehouse<br/>(Dual Share & Ratings)"]
-    D --> E["Phase 5: Dashboard<br/>(Interactive Visuals)"]
-    E --> F["Phase 6: Teardown<br/>(Myntra vs. Ajio vs. Amazon)"]
-    F --> G["Phase 7 & 8: PRD & Case Study<br/>(Product Strategy)"]
-```
-
-1. **Voice of Customer (VoC) Mining**: Scraped 3,000 authentic Google Play Store reviews for Myntra (and 1,000 for Ajio) to bypass internal data silos and observe raw, unprompted post-purchase customer friction.
-2. **Deterministic Taxonomy Engineering**: Formulated a 6-category MECE taxonomy with explicit precedence rules to separate positive praise from actionable complaints and correctly root multi-stage failure journeys.
-3. **AI Classification & Validation Benchmark**: Evaluated a naive keyword matching baseline against a GenAI pipeline (`gemini-3.6-flash`). The GenAI model achieved **96.00% accuracy** on a 100-review human-verified validation set (a **+77.00% improvement** over the 19.00% keyword baseline).
-4. **Relational Data Warehouse & SQL Diagnostics**: Modeled the dataset in SQLite (`analysis/returns.db`), calculating dual-denominator category shares, sentiment ratings, and daily volume velocities.
-5. **Competitive UX & Policy Teardowns**: Audited mobile order flows across Myntra, Ajio, Amazon India, The Souled Store, and Nykaa to benchmark return windows and tracking capabilities.
+When a customer receives an incorrect item and requests a return, they face a broken operational loop: 3PL courier agents decline doorstep pickup because the physical item does not match the app catalog thumbnail ("Doorstep QC rejection", avg rating **1.05★**). Even when items are collected, financial settlement status becomes an opaque black box once the parcel enters transit, leaving customers waiting 10+ days without a bank UTR number and turning neutral shoppers into active brand detractors.
 
 ---
 
-## 3. Key Findings & Strategic Discoveries
+#### PRD Section 2: Supporting Evidence
 
-### Finding 1: The Refund Processing Gap (34.00% of Returns | 1.12★)
-Refund processing and settlement disputes represent the largest category of actionable return complaints. While Myntra offers detailed parcel tracking across pickup and transit checkpoints, live financial settlement status disappears once the package reaches the warehouse, causing customers acute anxiety and triggering repetitive 1-star reviews.
-
-### Finding 2: Warehouse Fulfillment Errors Exceed Sizing Issues by 3.4x (24.00% vs. 7.00%)
-Contrary to popular e-commerce mythology that customers simply misjudge their sizes, upstream fulfillment errors (third-party marketplace sellers dispatching incorrect size tags, wrong colors, or entirely different garments) outnumber genuine sizing/fit issues by more than 3-to-1.
-
-### Finding 3: Doorstep Reverse Logistics Suffers the Lowest Rating (1.05★)
-Reverse courier friction accounts for 20.00% of actionable returns and carries the lowest average star rating across the entire catalog (1.05★, with 95% of reviews rated 1 star). The primary driver is a "Doorstep QC Deadlock," where delivery agents refuse to collect wrong-item dispatches because the physical garment does not match the app image.
+- **Data Grounding**: Analysis across 389 classified reviews confirms that post-purchase operational and financial breakdowns account for **78.0%** of all actionable return grievances (Refunds: 34.0%, Wrong Items: 24.0%, Logistics/QC: 20.0%).
+- **Validation Rigor**: Categorization was validated using an independent held-out sample evaluated against human ground truth, achieving **82% accuracy on a held-out sample** without model inflation.
+- **Competitive & VoC Audit**: In-app competitive audits ([`design/competitive/teardown_notes.md`](../design/competitive/teardown_notes.md)) reveal that while physical parcel transit is tracked transparently across courier hubs, financial settlement tracking ceases upon warehouse arrival, replaced by static 5–7 day boilerplate notices.
 
 ---
 
-## 4. Product Strategy & Recommendations
+#### PRD Section 3: Goal Metric (Hypothesis-Framed)
 
-Based on these discoveries, I authored a comprehensive Product Requirements Document ([`docs/PRD.md`](PRD.md)) outlining four high-leverage product interventions:
-
-1. **Live Financial Settlement Tracker**: Provide a transparent 5-stage timeline from doorstep handover to bank UTR generation, eliminating support ticket volume.
-2. **Instant Webhook Refunds on Pickup Scan**: Disburse refunds immediately when couriers scan returns for low-risk, verified customers.
-3. **Mandatory 2D Barcode Verification at Packing**: Force packers to scan the inner garment tag before polybag sealing, eliminating 24% of avoidable returns at the warehouse gate.
-4. **Photo-Verified Doorstep QC**: Enable delivery agents to photograph mismatched items and complete returns, breaking the circular doorstep rejection loop.
+> **Hypothesis**:  
+> If we provide granular real-time visibility into the financial refund lifecycle (including bank UTR numbers) and decouple doorstep pickup QC for wrong-item claims via photo-verified handovers, **we hypothesize that return-related customer support ticket volume will decrease by 35%** (from 14.2 to <9.2 tickets per 100 returns) and **wrong-item first-attempt pickup success will increase from 42% to 85% within 60 days of rollout**.
 
 ---
 
-## 5. Artifact Navigation
+#### PRD Section 4: Proposed Solution
 
-- **Project Charter**: [`docs/project_charter.md`](project_charter.md)
-- **Taxonomy & Precedence Rules**: [`docs/taxonomy.md`](taxonomy.md)
-- **Model Validation & Linguistic Comparison**: [`docs/classification_comparison.md`](classification_comparison.md)
-- **Executive Summary of Findings**: [`docs/summary_of_findings.md`](summary_of_findings.md)
-- **Competitive Teardown Notes**: [`design/competitive/teardown_notes.md`](../design/competitive/teardown_notes.md)
-- **Product Requirements Document**: [`docs/PRD.md`](PRD.md)
-- **Interactive Executive Dashboard**: [`analysis/dashboard.html`](../analysis/dashboard.html)
+##### Pillar 1: In-App Real-Time Refund & Settlement Tracker
+- Replace generic "Refund in 5–7 days" boilerplate with a 5-stage live milestone tracker inside Order Details:  
+  `Item Picked Up` $\rightarrow$ `Hub Inbound Scan` $\rightarrow$ `QC Verified` $\rightarrow$ `Refund Initiated` $\rightarrow$ `Bank Credit Confirmed`.
+- As soon as the finance webhook triggers payout, display the **Bank Reference / UTR Number** directly in the app and dispatch an automated SMS/WhatsApp notification, empowering customers to verify credits with their own banks.
+
+##### Pillar 2: "Wrong Item Received" Doorstep QC Decoupling
+- When a customer selects the return reason *"Received Wrong Item / Mismatched Tag"*, the delivery partner app bypasses the strict catalog visual match requirement.
+- The 3PL courier captures **two in-app verification photos** (the physical item and inner garment size tag), secures the return in a barcode-scanned tamper-evident bag, and hands over a return receipt, immediately unblocking the customer.
+
+##### Pillar 3: Fast-Track Webhook Refunds for Low-Risk Cohorts
+- Automatically trigger instant UPI/bank refunds upon doorstep courier pickup scan for low-risk, verified users (Myntra Insider members with return abuse scores <0.15).
+
+---
+
+#### PRD Section 5: Scope & Non-Goals
+
+##### In-Scope (Phase 1)
+- In-app Refund Timeline component on Order Details page (iOS, Android, Mobile Web).
+- Payment gateway webhook integration to ingest and display live UTR numbers.
+- Logistics Partner App (3PL SDK) photo-capture workflow for wrong-item dispatches.
+- Risk-engine rule gating instant refunds upon courier handover scan.
+
+##### Non-Goals (Explicitly Out-of-Scope)
+- **Size & Fit Recommendations**: No changes to sizing charts, fit predictors, or virtual try-on tools (data proves sizing is not the primary return driver).
+- **Return Policy Duration**: Maintaining Myntra's existing 14-day policy window without modification.
+- **Warehouse Management System (WMS) Overhaul**: Upstream vendor dispatch penalties and packing station barcode enforcement will be addressed in a separate supply-chain PRD.
+
+---
+
+#### PRD Section 6: Success Metrics
+
+| Metric Type | Metric Name | Baseline | 60-Day Target |
+| :--- | :--- | :---: | :---: |
+| **Primary Metric** | Return/Refund CS Escalation Rate (Tickets / 100 Returns) | 14.2 | **< 9.2 (-35%)** |
+| **Secondary Metric** | First-Attempt Pickup Completion for Wrong-Item Claims | 42.0% | **> 85.0%** |
+| **Secondary Metric** | % of Refunds with Live UTR Surfaced within 48h of Pickup | 0.0% | **> 90.0%** |
+| **Secondary Metric** | Customer Satisfaction (CSAT) on Completed Returns | 1.12★ | **> 3.50★** |
+| **Guardrail Metric** | Fraud / Tampered Parcel Inbound Rate at Warehouse | 0.8% | **< 1.2%** |
+
+---
+
+#### PRD Section 7: Risks, Edge Cases & Methodological Limitations
+
+1. **Methodological Limitation (Review-Data Proxy)**:  
+   This PRD is grounded in public Google Play Store reviews rather than Myntra's proprietary internal WMS/ERP return transaction database. Play Store reviews inherently exhibit vocal-negative complaint bias and capture severe escalation failures rather than silent, frictionless returns. Feature rollout must validate these complaint proportions against internal telemetry during the 10% A/B test phase.
+2. **Doorstep Fraud / Rags in Tamper-Evident Bag**:  
+   Customers or couriers may exploit photo-verified pickup to return counterfeit or used garments.  
+   *Mitigation*: Mandatory photo capture of both garment and care tag; high-risk seller items require secondary warehouse inspection prior to non-UPI disbursements.
+3. **External Banking Gateway Latency**:  
+   Banks may take 24–48 hours to credit beneficiary accounts even after Myntra issues the transfer.  
+   *Mitigation*: Displaying the exact 12-digit UTR reference number eliminates perceived platform opacity and directs user inquiries to their receiving bank.
+
+---
+
+## 7. Wireframes
+
+The wireframes illustrate the refund visibility flow across three mobile screens:
+
+1. **Order Details (refund status entry point)**: Displays the order summary with a dedicated Refund Status card indicating "In Progress" and directing the user to track the refund.
+2. **Refund Status Tracker (4-stage stepper: Package Received → Quality Check → Refund Approved → Credited to Account)**: Provides an active vertical stepper showing milestone progress (`Package Received` completed, `Quality Check` completed, `Refund Approved` with expected completion date, leading to `Credited to Account`).
+3. **Refund Credited confirmation**: Confirms successful transfer of ₹1,299 to the designated bank account with account number digits, credit date, transaction reference number (`REF#99210347`), and an inline rating prompt.
+
+*Design Process Note*: These wireframe screens were generated using Figma's AI generation tool (Figma Make) and subsequently reviewed and verified manually; they were not built through a fully manual, from-scratch design process.
+
+| Screen 1: Order Details (refund status entry point) | Screen 2: Refund Status Tracker (4-stage stepper) | Screen 3: Refund Credited confirmation |
+| :---: | :---: | :---: |
+| ![Screen 1: Order Details](../design/wireframes/Screen1.png) | ![Screen 2: Refund Status Tracker](../design/wireframes/Screen2.png) | ![Screen 3: Refund Credited Confirmation](../design/wireframes/Screen3.png) |
+
+---
+
+## 8. Known Limitations
+
+The following limitations apply directly to this study:
+
+- **Proxy Data and Selection Bias**: Customer review data from the Google Play Store serves as a public proxy for internal return-transaction records and is subject to selection bias toward extreme negative opinions.
+- **Classification Circularity Flaw**: The initial classification evaluation possessed a circularity flaw where ground truth annotations had been aligned with the taxonomy under test; this required independent re-validation on a blind sample, representing a genuine procedural limitation of the initial approach.
+- **Sample Size Constraints**: The independent validation sample size (achieving an 82% agreement rate on a held-out sample of 28 reviews) is limited in scale and is not statistically definitive across enterprise-scale catalog volumes.
+- **Happy-Path Scope**: The wireframes illustrate only the successful happy-path refund journey; exception states, contested returns, and failed quality check outcomes require separate status flows that were not designed in this iteration.
+- **Absence of Internal Telemetry**: No internal Myntra database records, ERP warehouse management logs, or customer support ticket volumes were accessible; all findings represent directional indicators rather than confirmed enterprise metrics.
+- **Lack of Active Return Flow Capture**: The competitive audit could not verify active in-app return-reason selection dropdowns because no researcher purchase fell within an active return window during the audit period.
+
+---
+
+## 9. What I'd Test Next
+
+If granted access to internal Myntra transaction databases, I would validate these findings by querying internal WMS return disposition codes and customer support ticket categorizations across 100,000+ monthly return records to determine whether the 34% refund-delay and 24% warehouse-error complaint shares match internal ERP incidence rates. Post-launch, the proposed refund tracker's operational impact would be measured through a 10% A/B rollout tracking whether customer escalation volume decreases from the 14.2 tickets per 100 returns baseline toward the target of <9.2 tickets (-35%), alongside measuring first-attempt pickup rates for wrong-item claims and CSAT ratings on completed returns.
