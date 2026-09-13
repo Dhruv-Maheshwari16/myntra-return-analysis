@@ -73,7 +73,7 @@ Data pulled directly from [`analysis/category_share.csv`](../analysis/category_s
 
 The interactive dashboard synthesizes the SQL diagnostics into high-level KPI cards, complaint volume distributions, category sentiment ratings, and an operational ROI savings calculator:
 
-![Myntra Returns Analysis Dashboard](../assets/dashboard.png)
+<img src="../assets/dashboard.png" width="750" alt="Myntra Returns Analysis Dashboard" />
 
 *(The live interactive version with dynamic category inspection, dual-denominator toggles, and return reduction simulation is accessible at [`analysis/dashboard.html`](../analysis/dashboard.html)).*
 
@@ -87,7 +87,17 @@ The competitive audit documented in [`design/competitive/teardown_notes.md`](../
 - **Return-Window-Closed Transparency**: The original hypothesis that Myntra silently removes the return button upon expiration was tested and found false. Myntra displays an explicit notification banner stating `"Exchange/Return window closed on [date]"` directly on the order card, comparable to Amazon's messaging.
 - **Package Logistics vs. Refund Status Visibility Gap**: All three platforms track physical return package logistics in detail (pickup assigned, collected, transit hub scan, warehouse inbound), but none of the three display live refund or financial settlement status once the package is received at the warehouse. This visibility gap coincides directly with where review data shows the highest concentration of customer complaints (34.0% under Refund Processing & Settlement Disputes).
 - **Aspirational Benchmark**: The Souled Store (offering a 30-day return window) and Nykaa (permitting returns on select sealed fragrance SKUs) demonstrate that more flexible return policies are viable in the Indian market when return-risk is calibrated. This finding was cited from general market knowledge and public policy documentation, not independently screenshotted during this research.
-- **Research Limitation**: A live return-reason selection screen could not be captured on any platform during the audit because no personal order was within an active return window at the time of research.
+- **Research Limitation**: A live return-reason selection screen could not be captured on any platform during the audit because no personal order was within an active return window during research.
+
+### Visual Evidence: Competitive Return Policies & Expiration Messaging
+
+| Myntra (14-Day Window) | Ajio (10-Day Window) | Amazon India (10-Day Window) |
+| :---: | :---: | :---: |
+| <img src="../assets/Myntra1.jpg" width="240" alt="Myntra 14-Day Return Policy" /> | <img src="../assets/AJIO.jpg" width="240" alt="Ajio 10-Day Return Policy" /> | <img src="../assets/Amazon1.jpg" width="240" alt="Amazon India 10-Day Return Policy" /> |
+
+| Myntra: Closed Return Window Notification | Amazon India: Closed Return Window Notification |
+| :---: | :---: |
+| <img src="../assets/Myntra.jpg" width="260" alt="Myntra Closed Return Window Banner" /> | <img src="../assets/Amazon.jpg" width="260" alt="Amazon Closed Return Window Timestamp" /> |
 
 ---
 
@@ -203,7 +213,7 @@ The wireframes illustrate the refund visibility flow across three mobile screens
 
 | Screen 1: Order Details (refund status entry point) | Screen 2: Refund Status Tracker (4-stage stepper) | Screen 3: Refund Credited confirmation |
 | :---: | :---: | :---: |
-| ![Screen 1: Order Details](../design/wireframes/Screen1.png) | ![Screen 2: Refund Status Tracker](../design/wireframes/Screen2.png) | ![Screen 3: Refund Credited Confirmation](../design/wireframes/Screen3.png) |
+| <img src="../design/wireframes/Screen1.png" width="240" alt="Screen 1: Order Details" /> | <img src="../design/wireframes/Screen2.png" width="240" alt="Screen 2: Refund Status Tracker" /> | <img src="../design/wireframes/Screen3.png" width="240" alt="Screen 3: Refund Credited Confirmation" /> |
 
 ---
 

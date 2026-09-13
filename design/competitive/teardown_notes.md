@@ -28,21 +28,21 @@ My analysis reveals that **Myntra currently offers the most generous return wind
 #### Myntra — 14-Day Policy Disclosure
 On Myntra's product display page, the policy is prominently badged as *"Hassle free 14 days Return & Exchange"* alongside clear terms: *"Choose to return or exchange for a different size (if available) within 14 days."*
 
-![Myntra 14-Day Return Policy on Product Page](../../assets/Myntra1.jpg)
+<img src="../../assets/Myntra1.jpg" width="280" alt="Myntra 14-Day Return Policy on Product Page" />
 
 ---
 
 #### Ajio — 10-Day Policy Disclosure
 On Ajio's product page under *Delivery & Return Details*, the platform specifies a **10 day Return and Exchange** window with a link to secondary policy rules.
 
-![Ajio 10-Day Return and Exchange Policy](../../assets/AJIO.jpg)
+<img src="../../assets/AJIO.jpg" width="280" alt="Ajio 10-Day Return and Exchange Policy" />
 
 ---
 
 #### Amazon India — 10-Day Policy Disclosure
 Under Amazon's *Shop with confidence* section, fashion apparel listings display a **10 days Return & Exchange** guarantee.
 
-![Amazon India 10-Day Return & Exchange Badge](../../assets/Amazon1.jpg)
+<img src="../../assets/Amazon1.jpg" width="280" alt="Amazon India 10-Day Return & Exchange Badge" />
 
 ---
 
@@ -72,14 +72,14 @@ My audit disproved this assumption. **Myntra explicitly communicates window expi
 ### Visual Evidence from Closed Order Cards
 
 #### Myntra Order History Card
-![Myntra Closed Return Window Notification Banner](../../assets/Myntra.jpg)
+<img src="../../assets/Myntra.jpg" width="280" alt="Myntra Closed Return Window Notification Banner" />
 
 *Myntra explicitly informs me of the exact date on which my return window lapsed, eliminating ambiguity.*
 
 ---
 
 #### Amazon India Order History Card
-![Amazon India Closed Return Window Timestamp](../../assets/Amazon.jpg)
+<img src="../../assets/Amazon.jpg" width="280" alt="Amazon India Closed Return Window Timestamp" />
 
 *Amazon displays the closed return window date under order info in a similarly direct manner.*
 
