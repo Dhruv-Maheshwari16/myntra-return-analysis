@@ -1,0 +1,32 @@
+review_date,category,review_count,avg_rating
+2026-09-05,Other / Not Return-Related,46,4.72
+2026-09-05,Refund Processing & Settlement Disputes,9,1.44
+2026-09-05,Return & Exchange Logistics & QC Friction,4,1.25
+2026-09-05,Size & Fit Discrepancy,3,2.67
+2026-09-05,Incorrect / Wrong Item Delivered,3,1.0
+2026-09-05,"Defective, Damaged & Counterfeit Items",1,1.0
+2026-09-06,Other / Not Return-Related,71,4.9
+2026-09-06,Refund Processing & Settlement Disputes,6,1.0
+2026-09-06,"Defective, Damaged & Counterfeit Items",5,1.0
+2026-09-06,Size & Fit Discrepancy,2,1.0
+2026-09-06,Return & Exchange Logistics & QC Friction,2,1.0
+2026-09-06,Incorrect / Wrong Item Delivered,2,1.0
+2026-09-07,Other / Not Return-Related,51,4.67
+2026-09-07,Return & Exchange Logistics & QC Friction,5,1.0
+2026-09-07,Incorrect / Wrong Item Delivered,4,1.0
+2026-09-07,"Defective, Damaged & Counterfeit Items",4,1.0
+2026-09-07,Refund Processing & Settlement Disputes,1,1.0
+2026-09-08,Other / Not Return-Related,65,4.85
+2026-09-08,Incorrect / Wrong Item Delivered,8,1.38
+2026-09-08,Refund Processing & Settlement Disputes,6,1.0
+2026-09-08,Return & Exchange Logistics & QC Friction,5,1.0
+2026-09-08,"Defective, Damaged & Counterfeit Items",3,1.0
+2026-09-09,Other / Not Return-Related,45,4.71
+2026-09-09,Refund Processing & Settlement Disputes,11,1.0
+2026-09-09,Incorrect / Wrong Item Delivered,6,1.0
+2026-09-09,Return & Exchange Logistics & QC Friction,4,1.0
+2026-09-09,Size & Fit Discrepancy,2,4.0
+2026-09-10,Other / Not Return-Related,11,5.0
+2026-09-10,"Defective, Damaged & Counterfeit Items",2,1.5
+2026-09-10,Refund Processing & Settlement Disputes,1,1.0
+2026-09-10,Incorrect / Wrong Item Delivered,1,1.0

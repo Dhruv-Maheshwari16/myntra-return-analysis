@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Myntra Returns Analysis - Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #ffffff;
+      color: #222222;
+      margin: 0;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    header {
+      border-bottom: 2px solid #eaeaea;
+      padding-bottom: 16px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111111;
+      margin: 0 0 6px 0;
+    }
+
+    p.subtitle {
+      color: #555555;
+      font-size: 14px;
+      margin: 0 0 12px 0;
+    }
+
+    /* Executive Briefing Box */
+    .pitch-box {
+      background-color: #fcfcfc;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 14px 16px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #333333;
+    }
+
+    .pitch-title {
+      font-weight: 700;
+      color: #111111;
+      margin-bottom: 6px;
+    }
+
+    .pitch-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .pitch-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .pitch-item {
+      background: #ffffff;
+      border: 1px solid #e5e5e5;
+      border-radius: 4px;
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .pitch-item strong {
+      display: block;
+      color: #111111;
+      margin-bottom: 3px;
+    }
+
+    /* Summary KPI Cards */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 850px) {
+      .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .summary-card {
+      border: 1px solid #dddddd;
+      border-radius: 4px;
+      padding: 14px 16px;
+      background-color: #ffffff;
+      transition: border-color 0.15s ease;
+    }
+
+    .summary-card:hover {
+      border-color: #999999;
+    }
+
+    .summary-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #555555;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #111111;
+    }
+
+    .summary-subtext {
+      font-size: 12px;
+      color: #777777;
+      margin-top: 4px;
+    }
+
+    /* Simulator Section */
+    .simulator-box {
+      border: 1px solid #dddddd;
+      background-color: #fafafa;
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+    }
+
+    .simulator-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .simulator-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #222222;
+    }
+
+    .simulator-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 3px;
+      background-color: #eeeeee;
+      color: #555555;
+      border: 1px solid #dddddd;
+    }
+
+    .simulator-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .simulator-controls {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .control-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333333;
+      margin-bottom: 6px;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slider-row input[type="range"] {
+      flex: 1;
+      cursor: pointer;
+    }
+
+    .slider-value-badge {
+      font-size: 14px;
+      font-weight: 700;
+      color: #2563eb;
+      min-width: 44px;
+      text-align: right;
+    }
+
+    .control-group select {
+      width: 100%;
+      padding: 6px 10px;
+      font-size: 13px;
+      border: 1px solid #cccccc;
+      border-radius: 4px;
+      background-color: #ffffff;
+      color: #222222;
+      cursor: pointer;
+    }
+
+    .simulator-results {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 800px) {
+      .simulator-results {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .sim-card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 10px 12px;
+      text-align: center;
+    }
+
+    .sim-card-label {
+      font-size: 11px;
+      color: #666666;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .sim-card-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111111;
+    }
+
+    .sim-card-sub {
+      font-size: 11px;
+      color: #777777;
+      margin-top: 2px;
+    }
+
+    .sim-impact-summary {
+      margin-top: 10px;
+      font-size: 12px;
+      color: #444444;
+      background-color: #ffffff;
+      border: 1px solid #e0e0e0;
+      padding: 8px 12px;
+      border-radius: 4px;
+      line-height: 1.45;
+    }
+
+    /* Category Buttons */
+    .filter-pills-wrap {
+      margin-bottom: 12px;
+    }
+
+    .filter-pills-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #555555;
+      margin-bottom: 6px;
+    }
+
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill-btn {
+      background-color: #ffffff;
+      border: 1px solid #cccccc;
+      border-radius: 4px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #333333;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-btn:hover {
+      background-color: #f5f5f5;
+      border-color: #999999;
+    }
+
+    .pill-btn.active {
+      background-color: #2563eb;
+      border-color: #2563eb;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Deep-Dive Box */
+    .detail-box {
+      border: 1px solid #dddddd;
+      background-color: #fafafa;
+      border-radius: 4px;
+      padding: 16px 18px;
+      margin-bottom: 24px;
+    }
+
+    .detail-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .detail-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111111;
+    }
+
+    .detail-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 3px;
+      background: #eeeeee;
+      color: #333333;
+      border: 1px solid #dddddd;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .detail-item strong {
+      display: block;
+      color: #111111;
+      margin-bottom: 3px;
+    }
+
+    .detail-item p {
+      margin: 0;
+      color: #444444;
+      line-height: 1.45;
+    }
+
+    .customer-quote {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 10px 12px;
+      color: #333333;
+      margin-top: 4px;
+      line-height: 1.45;
+    }
+
+    /* Charts Section */
+    .charts-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 800px) {
+      .charts-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .chart-box {
+      border: 1px solid #dddddd;
+      border-radius: 4px;
+      padding: 16px;
+      background-color: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chart-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #222222;
+      margin: 0 0 4px 0;
+    }
+
+    .chart-desc {
+      font-size: 12px;
+      color: #666666;
+      margin-bottom: 12px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 270px;
+      width: 100%;
+    }
+
+    .chart-takeaway {
+      margin-top: 12px;
+      padding-top: 10px;
+      border-top: 1px dashed #e0e0e0;
+      font-size: 12px;
+      color: #444444;
+      line-height: 1.4;
+    }
+
+    .chart-takeaway strong {
+      color: #111111;
+    }
+
+    /* Table Section */
+    .table-box {
+      border: 1px solid #dddddd;
+      border-radius: 4px;
+      padding: 16px;
+      margin-bottom: 24px;
+      background-color: #ffffff;
+    }
+
+    .table-header-wrap {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .table-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #222222;
+      margin: 0;
+    }
+
+    .table-hint {
+      font-size: 12px;
+      color: #555555;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid #e5e5e5;
+      padding: 9px 12px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f7f7f7;
+      font-weight: 600;
+      color: #333333;
+    }
+
+    tbody tr {
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    tbody tr:hover {
+      background-color: #f0f7ff;
+    }
+
+    tbody tr.selected-row {
+      background-color: #e0edff !important;
+      font-weight: 600;
+    }
+
+    /* Summary Notes */
+    .notes-box {
+      background-color: #fafafa;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      padding: 18px 20px;
+      font-size: 13px;
+      color: #444444;
+      margin-bottom: 24px;
+    }
+
+    .notes-box h3 {
+      font-size: 15px;
+      font-weight: 600;
+      color: #111111;
+      margin: 0 0 10px 0;
+    }
+
+    .notes-box ul {
+      margin: 0;
+      padding-left: 20px;
+    }
+
+    .notes-box li {
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <header>
+      <h1>Myntra Returns Analysis Dashboard</h1>
+      <p class="subtitle">Voice-of-Customer Return Drivers, Root Causes and Operational Roadmap &bull; 389 Reviews (Sep 5 &ndash; Sep 10, 2026)</p>
+      
+      <!-- Executive Explainer Box -->
+      <div class="pitch-box">
+        <div class="pitch-title">Executive Project Briefing:</div>
+        <div>
+          We categorized 389 customer reviews through a structured 6-category disambiguation taxonomy. Filtering out 289 general praise reviews left exactly 100 actionable return complaints, uncovering the true operational friction points.
+        </div>
+        <div class="pitch-grid">
+          <div class="pitch-item">
+            <strong>1. The Counter-Intuitive Finding</strong>
+            Industry consensus assumes returns are mostly sizing errors. Our data shows warehouse picking errors (24%) exceed sizing (7%) by 3.4 to 1.
+          </div>
+          <div class="pitch-item">
+            <strong>2. The Post-Handover Bottleneck</strong>
+            34% of return complaints happen after the item was collected, caused by delayed UPI refunds and forced MynCash wallet credits.
+          </div>
+          <div class="pitch-item">
+            <strong>3. The Recommended Fix</strong>
+            Trigger instant UPI refunds upon doorstep pickup scan and enforce 2D barcode verification at warehouse packing stations.
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPI Cards -->
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-title">Total Reviews Analyzed</div>
+        <div class="summary-value">389</div>
+        <div class="summary-subtext">Evaluated customer reviews (Sep 5-10, 2026)</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Actionable Return Complaints</div>
+        <div class="summary-value">100</div>
+        <div class="summary-subtext">25.7% actionable (289 praise filtered)</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Top Customer Grievance</div>
+        <div class="summary-value">Refunds (34%)</div>
+        <div class="summary-subtext">Post-pickup settlement delays</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-title">Lowest-Rated Experience</div>
+        <div class="summary-value">Logistics (1.05 / 5)</div>
+        <div class="summary-subtext">95% 1-star ratings on 3PL pickups</div>
+      </div>
+    </div>
+
+    <!-- ROI & Savings Calculator -->
+    <div class="simulator-box">
+      <div class="simulator-header">
+        <div class="simulator-title">Return Reduction and Cost Savings Calculator</div>
+        <span class="simulator-badge">Business Impact Model</span>
+      </div>
+
+      <div class="simulator-controls">
+        <div class="control-group">
+          <label for="reductionSlider">Target Reduction in Avoidable Returns:</label>
+          <div class="slider-row">
+            <input type="range" id="reductionSlider" min="5" max="30" step="5" value="15" oninput="updateSimulator()">
+            <span class="slider-value-badge" id="sliderValueText">15%</span>
+          </div>
+        </div>
+        <div class="control-group">
+          <label for="focusAreaSelect">Focus Operational Intervention:</label>
+          <select id="focusAreaSelect" onchange="updateSimulator()">
+            <option value="all">Comprehensive Fix (All 5 Categories)</option>
+            <option value="refund">Instant Doorstep UPI Refunds (34% of Complaints)</option>
+            <option value="warehouse">2D Barcode Dispatch QC (24% of Complaints)</option>
+            <option value="logistics">3PL Doorstep Handshake Calibrations (20% of Complaints)</option>
+            <option value="defective">Merchant Restock QC and Authenticity Audits (15% of Complaints)</option>
+            <option value="sizing">Sizing and Fit Guidance (7% of Complaints)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="simulator-results">
+        <div class="sim-card">
+          <div class="sim-card-label">Avoided Returns / Month</div>
+          <div class="sim-card-value" id="simReturnsAvoided">22,500</div>
+          <div class="sim-card-sub">Fewer reverse shipments</div>
+        </div>
+        <div class="sim-card">
+          <div class="sim-card-label">Monthly Logistics Savings</div>
+          <div class="sim-card-value" id="simMonthlySavings">Rs 45.0 Lakhs</div>
+          <div class="sim-card-sub">At Rs 200 avg logistics cost</div>
+        </div>
+        <div class="sim-card">
+          <div class="sim-card-label">Annualized Savings</div>
+          <div class="sim-card-value" id="simAnnualSavings">Rs 5.40 Cr</div>
+          <div class="sim-card-sub">Direct EBITDA margin uplift</div>
+        </div>
+        <div class="sim-card">
+          <div class="sim-card-label">Estimated CSAT Uplift</div>
+          <div class="sim-card-value" id="simCsatUplift">+0.55 pts</div>
+          <div class="sim-card-sub">Rating recovery</div>
+        </div>
+      </div>
+
+      <div class="sim-impact-summary" id="simExplanationText">
+        <strong>Strategic Impact:</strong> A 15% reduction across all return drivers saves Rs 45.0 Lakhs per month in reverse courier charges while protecting customer retention.
+      </div>
+    </div>
+
+    <!-- Category Filter Buttons -->
+    <div class="filter-pills-wrap">
+      <div class="filter-pills-label">Select Category to Inspect:</div>
+      <div class="filter-pills">
+        <button type="button" class="pill-btn active" onclick="selectCategory(0)">Refund Disputes (34%)</button>
+        <button type="button" class="pill-btn" onclick="selectCategory(1)">Wrong Items (24%)</button>
+        <button type="button" class="pill-btn" onclick="selectCategory(2)">Logistics Friction (20%)</button>
+        <button type="button" class="pill-btn" onclick="selectCategory(3)">Defective or Damaged (15%)</button>
+        <button type="button" class="pill-btn" onclick="selectCategory(4)">Size and Fit (7%)</button>
+        <button type="button" class="pill-btn" onclick="selectCategory(5)">Positive Praise (289)</button>
+      </div>
+    </div>
+
+    <!-- Category Inspector Panel -->
+    <div class="detail-box" id="detailPanel">
+      <div class="detail-header">
+        <div class="detail-title" id="detailCategoryTitle">Category Deep-Dive: Refund Processing and Settlement Disputes</div>
+        <span class="detail-badge" id="detailStatsBadge">34 Reviews (34.0% of Actionable) | Avg: 1.12 / 5</span>
+      </div>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <strong>What is happening?</strong>
+          <p id="detailExplanation">Customer handed over the return item to the courier, but the financial refund has not reached their bank account beyond promised SLAs, or money was forcibly converted into non-withdrawable MynCash.</p>
+          <strong style="margin-top: 10px;">Recommended Operational Fix:</strong>
+          <p id="detailFix">Trigger automated instant UPI refund webhooks immediately upon doorstep reverse pickup scan.</p>
+        </div>
+        <div class="detail-item">
+          <strong>Sample Real Customer Review:</strong>
+          <div class="customer-quote" id="detailQuote">"very bad service delivery boy picked up my parcel and don't update status and myntra help not replying about my refund. Waited 10+ days."</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="charts-row">
+
+      <!-- Chart 1: Return Complaint Volume -->
+      <div class="chart-box">
+        <h2 class="chart-title">1. Return Complaints by Category (N = 100)</h2>
+        <div class="chart-desc">Relative volume across the 5 actionable return categories</div>
+        <div class="chart-container">
+          <canvas id="categoryVolumeChart"></canvas>
+        </div>
+        <div class="chart-takeaway">
+          <strong>Key Takeaway for Leadership:</strong> Sizing is widely assumed to be the primary cause of returns in apparel, but warehouse picking errors (24) outnumber true sizing issues (7) by <strong>3.4 to 1</strong>.
+        </div>
+      </div>
+
+      <!-- Chart 2: Average Rating -->
+      <div class="chart-box">
+        <h2 class="chart-title">2. Customer Rating by Category (Scale of 1 to 5)</h2>
+        <div class="chart-desc">Average user satisfaction rating per category</div>
+        <div class="chart-container">
+          <canvas id="averageRatingChart"></canvas>
+        </div>
+        <div class="chart-takeaway">
+          <strong>Key Takeaway for Leadership:</strong> Return Logistics (1.05 / 5) and Physical Defects (1.07 / 5) cause severe brand damage, while Size and Fit issues (2.57 / 5) retain higher customer goodwill.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Summary Table -->
+    <div class="table-box">
+      <div class="table-header-wrap">
+        <h2 class="table-title">3. Category Breakdown and Satisfaction Metrics</h2>
+        <span class="table-hint">Note: Click any row below to inspect category details</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>Review Count</th>
+            <th>% Total (N=389)</th>
+            <th>% Actionable (N=100)</th>
+            <th>Avg Rating</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr class="selected-row" onclick="selectCategory(0)">
+            <td>Refund Processing and Settlement Disputes</td>
+            <td>34</td>
+            <td>8.7%</td>
+            <td>34.0%</td>
+            <td>1.12 / 5</td>
+          </tr>
+          <tr onclick="selectCategory(1)">
+            <td>Incorrect or Wrong Item Delivered</td>
+            <td>24</td>
+            <td>6.2%</td>
+            <td>24.0%</td>
+            <td>1.13 / 5</td>
+          </tr>
+          <tr onclick="selectCategory(2)">
+            <td>Return and Exchange Logistics and QC Friction</td>
+            <td>20</td>
+            <td>5.1%</td>
+            <td>20.0%</td>
+            <td>1.05 / 5</td>
+          </tr>
+          <tr onclick="selectCategory(3)">
+            <td>Defective, Damaged and Counterfeit Items</td>
+            <td>15</td>
+            <td>3.9%</td>
+            <td>15.0%</td>
+            <td>1.07 / 5</td>
+          </tr>
+          <tr onclick="selectCategory(4)">
+            <td>Size and Fit Discrepancy</td>
+            <td>7</td>
+            <td>1.8%</td>
+            <td>7.0%</td>
+            <td>2.57 / 5</td>
+          </tr>
+          <tr onclick="selectCategory(5)">
+            <td>Other / Not Return-Related</td>
+            <td>289</td>
+            <td>74.3%</td>
+            <td>—</td>
+            <td>4.79 / 5</td>
+          </tr>
+          <tr style="font-weight: 600; background-color: #f0f0f0; cursor: default;">
+            <td>Total / Overall Dataset</td>
+            <td>389</td>
+            <td>100.0%</td>
+            <td>100.0%</td>
+            <td>3.87 / 5</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Notes and Findings -->
+    <div class="notes-box">
+      <h3>Summary of Key Findings (Presentation Talking Points)</h3>
+      <ul>
+        <li><strong>Post-pickup refund trap (34%):</strong> More than a third of return complaints happen after the item was already successfully collected. Customers wait 10+ days for UPI refunds or receive unwanted store credits.</li>
+        <li><strong>Warehouse errors exceed sizing by 3.4x:</strong> Sizing accounts for only 7% of return complaints, while fulfillment errors (wrong size tags, mismatched items sent by sellers) account for 24%.</li>
+        <li><strong>Logistics handshake breakdown (1.05 / 5):</strong> Delivery agent no-shows, false "Customer declined" app updates, and courier refusal to collect mismatched tags create the lowest customer satisfaction.</li>
+        <li><strong>Noise accurately filtered:</strong> 289 reviews (74.3%) were positive praise or general shopping comments caught by keyword filters, cleanly isolated under "Other".</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <script>
+    // Detailed Category Knowledge Base
+    const categoryDetails = [
+      {
+        name: "Refund Processing and Settlement Disputes",
+        stats: "34 Reviews (34.0% of Actionable) | Avg: 1.12 / 5",
+        explanation: "Customer handed over the return item to the courier, but the financial refund has not reached their bank account beyond promised SLAs, or money was forcibly converted into non-withdrawable MynCash.",
+        fix: "Trigger automated instant UPI refund webhooks immediately upon doorstep reverse pickup scan.",
+        quote: "\"why do they take days to refund man... I waited for 10+ days for my refund, upi through toh bilkul nahi karna, they will never refund the money.\""
+      },
+      {
+        name: "Incorrect or Wrong Item Delivered",
+        stats: "24 Reviews (24.0% of Actionable) | Avg: 1.13 / 5",
+        explanation: "Marketplace sellers or warehouse pickers dispatched the wrong product, wrong color, or mismatched size label (e.g. invoice says 36, delivered garment is tagged XXL).",
+        fix: "Enforce mandatory 2D barcode tag verification at packing stations before polybag sealing.",
+        quote: "\"now days we faced worst service from myntra, wrong tag number issue... trying to exchange shoe but due to mismatch in tag pickup agent couldnt pickup the shoe... no resolution.\""
+      },
+      {
+        name: "Return and Exchange Logistics and QC Friction",
+        stats: "20 Reviews (20.0% of Actionable) | Avg: 1.05 / 5",
+        explanation: "3PL courier breakdown during physical handover: agent no-shows, false app updates claiming 'customer cancelled', or agents rejecting pickup due to vendor tag mismatches.",
+        fix: "Calibrate 3PL doorstep QC: allow courier photo upload override when seller originally shipped wrong tag.",
+        quote: "\"Pathetic, I had ordered a dress and requested an exchange.however, the delivery boy did not take the dress back during the exchange... no response from customer care.\""
+      },
+      {
+        name: "Defective, Damaged and Counterfeit Items",
+        stats: "15 Reviews (15.0% of Actionable) | Avg: 1.07 / 5",
+        explanation: "Products arriving physically torn, stained, damaged in transit (e.g. leaking shampoo), empty sealed packages, or duplicate/counterfeit items sold by third-party sellers.",
+        fix: "Audit return-restocking QC and enforce strict merchant authenticity penalties for repeat counterfeit flags.",
+        quote: "\"Very disappointing experience with Myntra. I ordered Yonex Nivis 350 shuttlecocks, but received duplicate/counterfeit products instead of genuine items. Raised return request but Myntra is now refusing to take them back.\""
+      },
+      {
+        name: "Size and Fit Discrepancy",
+        stats: "7 Reviews (7.0% of Actionable) | Avg: 2.57 / 5",
+        explanation: "The customer received the exact SKU and size ordered, but the garment failed to fit properly due to brand-specific tailoring inconsistencies or inaccurate online size charts.",
+        fix: "Implement cross-brand size standardizers and user body measurement fit predictors on product pages.",
+        quote: "\"overall good but for certain clothes ,the size chart are different from the product we get .\""
+      },
+      {
+        name: "Other / Not Return-Related",
+        stats: "289 Reviews (74.3% of Total) | Avg: 4.79 / 5",
+        explanation: "General 4 and 5 star customer praise regarding fabric quality, fast delivery, and UI experience that happened to contain keywords like 'quality', 'return', or 'exchange'.",
+        fix: "Rule 6 (Relevance Filter) successfully removes this non-return noise from operational complaint queues.",
+        quote: "\"Myntra bahut pyari app hai ispe shopping and return bahut aasan hai aur iske quality bahut pyari hoti hai thank you so much Myntra\""
+      }
+    ];
+
+    // Select category function for interactivity
+    function selectCategory(index) {
+      const data = categoryDetails[index];
+      if (!data) return;
+
+      document.getElementById('detailCategoryTitle').textContent = 'Category Deep-Dive: ' + data.name;
+      document.getElementById('detailStatsBadge').textContent = data.stats;
+      document.getElementById('detailExplanation').textContent = data.explanation;
+      document.getElementById('detailFix').textContent = data.fix;
+      document.getElementById('detailQuote').textContent = data.quote;
+
+      // Update table row highlighting
+      const rows = document.querySelectorAll('#tableBody tr');
+      rows.forEach((r, i) => {
+        if (i === index) {
+          r.classList.add('selected-row');
+        } else {
+          r.classList.remove('selected-row');
+        }
+      });
+
+      // Update button active states
+      const pills = document.querySelectorAll('.pill-btn');
+      pills.forEach((p, i) => {
+        if (i === index) {
+          p.classList.add('active');
+        } else {
+          p.classList.remove('active');
+        }
+      });
+    }
+
+    // Business Impact Simulator Logic
+    function updateSimulator() {
+      const reduction = parseInt(document.getElementById('reductionSlider').value, 10);
+      document.getElementById('sliderValueText').textContent = reduction + '%';
+      const focus = document.getElementById('focusAreaSelect').value;
+
+      // Base assumptions:
+      // ~500,000 apparel orders/month, 30% baseline return rate = 150,000 returns/month
+      // Cost per reverse pickup = Rs 200
+      let shareMultiplier = 1.0;
+      let focusDesc = "across all 5 return drivers";
+
+      if (focus === 'refund') {
+        shareMultiplier = 0.34;
+        focusDesc = "focusing specifically on Instant UPI Doorstep Refunds";
+      } else if (focus === 'warehouse') {
+        shareMultiplier = 0.24;
+        focusDesc = "focusing on 2D Barcode Dispatch & Packing Verification";
+      } else if (focus === 'logistics') {
+        shareMultiplier = 0.20;
+        focusDesc = "focusing on 3PL Doorstep Pickup SLAs & Courier Handshakes";
+      } else if (focus === 'defective') {
+        shareMultiplier = 0.15;
+        focusDesc = "focusing on Merchant Restock QC and Authenticity Audits";
+      } else if (focus === 'sizing') {
+        shareMultiplier = 0.07;
+        focusDesc = "focusing on Sizing and Fit Guidance";
+      }
+
+      const baselineAvoidableReturns = 150000;
+      const returnsAvoided = Math.round(baselineAvoidableReturns * (reduction / 100) * shareMultiplier);
+      const monthlySavingsInRupees = returnsAvoided * 200;
+      const monthlySavingsInLakhs = (monthlySavingsInRupees / 100000).toFixed(1);
+      const annualSavingsInCrores = ((monthlySavingsInRupees * 12) / 10000000).toFixed(2);
+      const csatUplift = ((reduction / 100) * shareMultiplier * 3.5).toFixed(2);
+
+      document.getElementById('simReturnsAvoided').textContent = returnsAvoided.toLocaleString('en-IN');
+      document.getElementById('simMonthlySavings').textContent = 'Rs ' + monthlySavingsInLakhs + ' Lakhs';
+      document.getElementById('simAnnualSavings').textContent = 'Rs ' + annualSavingsInCrores + ' Cr';
+      document.getElementById('simCsatUplift').textContent = '+' + csatUplift + ' pts';
+
+      document.getElementById('simExplanationText').innerHTML = 
+        '<strong>Strategic Impact:</strong> A ' + reduction + '% reduction in avoidable returns ' + focusDesc + 
+        ' prevents <strong>' + returnsAvoided.toLocaleString('en-IN') + '</strong> reverse shipments each month, generating <strong>Rs ' + 
+        monthlySavingsInLakhs + ' Lakhs</strong> in monthly logistics cost savings (<strong>Rs ' + annualSavingsInCrores + ' Cr</strong> annual EBITDA improvement).';
+    }
+
+    // Initialize Simulator
+    updateSimulator();
+
+    // Chart 1: Actionable Return Reasons (Horizontal Bar)
+    const ctxVolume = document.getElementById('categoryVolumeChart').getContext('2d');
+    const chartVolume = new Chart(ctxVolume, {
+      type: 'bar',
+      data: {
+        labels: [
+          'Refund Processing',
+          'Wrong Item Delivered',
+          'Return Logistics & QC',
+          'Defective / Damaged',
+          'Size & Fit Discrepancy'
+        ],
+        datasets: [{
+          label: 'Number of Complaints',
+          data: [34, 24, 20, 15, 7],
+          backgroundColor: '#3b82f6',
+          borderColor: '#2563eb',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              afterLabel: function() {
+                return 'Click bar to view details below';
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: { stepSize: 5 },
+            title: { display: true, text: 'Review Count (Complaints)' }
+          }
+        },
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const elementIndex = elements[0].index;
+            selectCategory(elementIndex);
+          }
+        }
+      }
+    });
+
+    // Chart 2: Average Rating per Category (Vertical Bar)
+    const ctxRating = document.getElementById('averageRatingChart').getContext('2d');
+    const chartRating = new Chart(ctxRating, {
+      type: 'bar',
+      data: {
+        labels: [
+          'Logistics & QC',
+          'Defective/Damage',
+          'Refund Processing',
+          'Wrong Item',
+          'Size & Fit',
+          'Other / Praise'
+        ],
+        datasets: [{
+          label: 'Average Rating (Scale 1 to 5)',
+          data: [1.05, 1.07, 1.12, 1.13, 2.57, 4.79],
+          backgroundColor: [
+            '#dc2626',
+            '#dc2626',
+            '#ea580c',
+            '#ea580c',
+            '#ca8a04',
+            '#16a34a'
+          ],
+          borderColor: '#cccccc',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              afterLabel: function() {
+                return 'Click bar to view details below';
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 5,
+            ticks: { stepSize: 1 },
+            title: { display: true, text: 'Average Rating (1 to 5)' }
+          }
+        },
+        onClick: (event, elements) => {
+          if (elements.length > 0) {
+            const ratingMap = [2, 3, 0, 1, 4, 5];
+            const clicked = elements[0].index;
+            selectCategory(ratingMap[clicked]);
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
